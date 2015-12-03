@@ -18,7 +18,7 @@ e.p = function(msg) {
  * If `body` is called in last of `list`, `done` is called.
  *
  * @param {Object[]} list - The list to call map.
- * @callback body - This is callback of map. It is necessary to call `done()` in `body`.
+ * @callback body - This is callback has 2 parameters. One is element of array. The other is callback to call `done`. Therefore it is necessary to call `done()` in `body`.
  * @callback done - This is called if `body` is called in last of `list`.
  **/
 e.amap = function(list, body, done) {
