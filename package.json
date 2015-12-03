@@ -1,0 +1,27 @@
+{
+  "name": "httpUtil",
+  "version": "0.0.1",
+  "description": "http utility",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nagahar/httpUtil.git"
+  },
+  "dependencies": {
+    "iconv": "^2.1.11",
+    "request": "^2.65.0",
+  },
+  "keywords": [
+    "http",
+    "async"
+  ],
+  "author": "Takanori Nagahara",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nagahar/httpUtil/issues"
+  },
+  "homepage": "https://github.com/nagahar/httpUtil"
+}
