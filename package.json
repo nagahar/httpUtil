@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "iconv": "^2.1.11",
-    "request": "^2.65.0",
+    "request": "^2.65.0"
   },
   "keywords": [
     "http",
