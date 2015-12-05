@@ -92,7 +92,7 @@ e.debugBreak = function(obj) {
 /**
  * Search a node identified in `localName` from sliblings of `node`.
  *
- * @param {Object[]} obj - This is object to print for debug.
+ * @param {Node} node - This is a node as a basis.
  * @param {string} localName - This is a local name to search
  * @callback callback - This is called when localName matches a sibling of `node`.
  **/
