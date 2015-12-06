@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "iconv": "^2.1.11",
-    "request": "^2.65.0"
+    "request": "^2.65.0",
+    "xmldom": "^0.1.19"
   },
   "keywords": [
     "http",
