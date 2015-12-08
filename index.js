@@ -15,9 +15,9 @@ e.get = function(url, encoding, success, failure) {
     request({ uri: url, encoding: null },
             function(error, response, body) {
                 if (!error && response.statusCode == 200) {
-                    success(e.convert(body, encoding))
+                    success(e.convert(body, encoding));
                 } else {
-                    failure(statusCode, url)
+                    failure(statusCode, error, url);
                 }
             });
 };
