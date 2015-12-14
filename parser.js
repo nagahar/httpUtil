@@ -35,6 +35,7 @@ var failure = monad(function(input) {
     return null;
 });
 
+// sample
 var p2 = item.bind(function(x) {
     return item.bind(function() {
         return item.bind(function(y) {
@@ -42,9 +43,5 @@ var p2 = item.bind(function(x) {
         });
     });
 });
-
-
-var s = p2("abcdef");
-console.log(JSON.stringify(s));
 
 

@@ -106,3 +106,41 @@ e.map = function(list, body, done) {
     });
 };
 
+e.monad = function(f) {
+    f.bind = function(g) {
+        var _self = this;
+        return function(input) {
+            var val = _self(input);
+            if (val === null) {
+                return null;
+            } else {
+                return g(val[0])(val[1]);
+            }
+        };
+    };
+
+    return f;
+};
+
+// monadic value
+e.item = monad(function(input) {
+    if (input === null) {
+        return null;
+    } else {
+        return [input.charAt(0), input.slice(1)];
+    }
+});
+
+// monadic value
+e.unit = monad(function(value) {
+    return function(input) {
+        return [value, input];
+    }
+});
+
+// monadic value
+e.failure = monad(function(input) {
+    return null;
+});
+
+
