@@ -111,17 +111,17 @@ e.getChilds = function(node, localName) {
  * @callback body - This is callback has 2 parameters. One is element of array. The other is callback to call `done`. Therefore it is necessary to call `done()` in `body`.
  * @callback done - This is called if `body` is called in last of `list`.
  **/
-e.map = function(list, body, done) {
-    var count = 0;
-    list.map(function(a) {
-        body(a, function() {
-            count++;
-            if (count == list.length) {
-                done();
-            }
-        });
-    });
-};
+//e.map = function(list, body, done) {
+//    var count = 0;
+//    list.map(function(a) {
+//        body(a, function() {
+//            count++;
+//            if (count == list.length) {
+//                done();
+//            }
+//        });
+//    });
+//};
 
 /**
  * Get monad from Function `f`.
@@ -130,18 +130,27 @@ e.map = function(list, body, done) {
  *
  * @example
  * // returns [['a', 'c'], 'def']
- * var parse = monad(function() { return [[], "abcdef"] }).bind(item).bind(item).bind(item)
+ * var parse = e.monad(function() { return [[], "abcdef"] }).bind(item).bind(item).bind(item)
  *     .bind(function(val) {
- *         return monad(function() {
+ *         return e.monad(function() {
  *             return [[val[0][0], val[0][2]], val[1]];
  *         })});
- * console.log(parse());
+ * console.log(parse.get());
  **/
 e.monad = function(f) {
     f.bind = function(g) { return g(this()); };
+    f.get = function() { return this(); };
     return f;
 };
 
+/**
+ * Make parser.
+ * @param {String} input - This is string to parse
+ * @return {Function} - Return a monad value
+ **/
+e.makeParser = function(input) {
+    return e.monad(function() { return [[], input] })
+}
 
 /**
  * A parser sample to return "as is" strings.
@@ -149,7 +158,7 @@ e.monad = function(f) {
  * @return {Function} - Return a monad value
  **/
 var unit = function(val) {
-    return monad(function() {
+    return e.monad(function() {
         return val;
     });
 }
@@ -160,7 +169,7 @@ var unit = function(val) {
  * @return {Function} - Return a monad value
  **/
 var item = function(val) {
-    return monad(function() {
+    return e.monad(function() {
         if (val === null) {
             return null;
         } else {
@@ -176,7 +185,7 @@ var item = function(val) {
  * @return {Function} - Return a monad value
  **/
 var failure = function(val) {
-    monad(function() {
+    return e.monad(function() {
         return null;
     });
 };
