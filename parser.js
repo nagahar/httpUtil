@@ -1,47 +1,36 @@
 function monad(f) {
-    f.bind = function(g) {
-        var _self = this;
-        return function(input) {
-            var val = _self(input);
-            if (val === null) {
-                return null;
-            } else {
-                return g(val[0])(val[1]);
-            }
-        };
-    };
-
+    f.bind = function(g) { return g(this()); };
     return f;
 };
 
 // monadic value
-var item = monad(function(input) {
-    if (input === null) {
-        return null;
-    } else {
-        return [input.charAt(0), input.slice(1)];
-    }
-});
-
-// monadic value
-var unit = monad(function(value) {
-    return function(input) {
-        return [value, input];
-    }
-});
-
-// monadic value
-var failure = monad(function(input) {
-    return null;
-});
-
-// sample
-var p2 = item.bind(function(x) {
-    return item.bind(function() {
-        return item.bind(function(y) {
-            return unit([x, y]);
-        });
+var item = function(val) {
+    return monad(function() {
+        if (val === null) {
+            return null;
+        } else {
+            val[0].push(val[1].charAt(0));
+            return [val[0], val[1].slice(1)];
+        }
     });
-});
+};
 
+// monadic value
+var unit = function(val) {
+    return monad(function() {
+        return [[val[0][0], val[0][2]], val[1]];
+    });
+}
+
+// monadic value
+var failure = function(val) {
+    monad(function() {
+        return null;
+    });
+};
+
+var p = monad(function() {
+    return [[], "abcdef"]
+}).bind(item).bind(item).bind(item).bind(unit);
+console.log(p())
 
