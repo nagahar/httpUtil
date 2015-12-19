@@ -106,39 +106,27 @@ e.getChilds = function(node, localName) {
 };
 
 /**
- * If `body` is called in last of `list`, `done` is called.
- * @param {Object[]} list - The list to call map.
- * @callback body - This is callback has 2 parameters. One is element of array. The other is callback to call `done`. Therefore it is necessary to call `done()` in `body`.
- * @callback done - This is called if `body` is called in last of `list`.
- **/
-//e.map = function(list, body, done) {
-//    var count = 0;
-//    list.map(function(a) {
-//        body(a, function() {
-//            count++;
-//            if (count == list.length) {
-//                done();
-//            }
-//        });
-//    });
-//};
-
-/**
  * Get monad from Function `f`.
  * @param {Function} f - This is a function (ex. parser function)
  * @return {Function} - Return a monad value including f
  *
  * @example
  * // returns [['a', 'c'], 'def']
- * var parse = e.monad(function() { return [[], "abcdef"] }).bind(item).bind(item).bind(item)
- *     .bind(function(val) {
- *         return e.monad(function() {
- *             return [[val[0][0], val[0][2]], val[1]];
- *         })});
- * console.log(parse.get());
+ * var parse = e.makeParser("abcdef").bind(function(_) {
+ *     console.log("_ " + _);
+ *     return item.bind(function(x) {
+ *         console.log("x " + x);
+ *         return item.bind(function(_) {
+ *             return item.bind(function(y) {
+ *                 return [[x[0], y[0]], y[1]];
+ *             }, _[1]);
+ *         }, x[1]);
+ *     }, _[1]);
+ * });
+ * console.log(parse);
  **/
 e.monad = function(f) {
-    f.bind = function(g) { return g(this()); };
+    f.bind = function(g, val) { return g(this(val)); };
     f.get = function() { return this(); };
     return f;
 };
@@ -149,7 +137,7 @@ e.monad = function(f) {
  * @return {Function} - Return a monad value
  **/
 e.makeParser = function(input) {
-    return e.monad(function() { return [[], input] })
+    return e.monad(function() { return [null, input] })
 }
 
 /**
@@ -157,37 +145,30 @@ e.makeParser = function(input) {
  * @param {Object} val - This is a value
  * @return {Function} - Return a monad value
  **/
-var unit = function(val) {
-    return e.monad(function() {
-        return val;
-    });
-}
+var unit = e.monad(function(val) {
+    return val;
+});
 
 /**
  * A parser sample to pick up first characters.
  * @param {Object} val - This is a value
  * @return {Function} - Return a monad value
  **/
-var item = function(val) {
-    return e.monad(function() {
-        if (val === null) {
-            return null;
-        } else {
-            val[0].push(val[1].charAt(0));
-            return [val[0], val[1].slice(1)];
-        }
-    });
-};
+var item = e.monad(function(val) {
+    console.log("val " + val);
+    if (val === null) {
+        return null;
+    } else {
+        return [val.charAt(0), val.slice(1)];
+    }
+});
 
 /**
  * A parser sample to return null.
  * @param {Object} val - This is a value
  * @return {Function} - Return a monad value
  **/
-var failure = function(val) {
-    return e.monad(function() {
-        return null;
-    });
-};
-
+var failure = e.monad(function(val) {
+    return null;
+});
 
