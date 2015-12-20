@@ -112,10 +112,8 @@ e.getChilds = function(node, localName) {
  *
  * @example
  * // returns [['a', 'c'], 'def']
- * var parse = e.makeParser("abcdef").bind(function(_) {
- *     console.log("_ " + _);
+ * var parse = e.monad(function() { return [null, "abcdef"] }).bind(function(_) {
  *     return item.bind(function(x) {
- *         console.log("x " + x);
  *         return item.bind(function(_) {
  *             return item.bind(function(y) {
  *                 return [[x[0], y[0]], y[1]];
@@ -132,13 +130,38 @@ e.monad = function(f) {
 };
 
 /**
- * Make parser.
- * @param {String} input - This is string to parse
- * @return {Function} - Return a monad value
+ * Execute several parsers sequentially.
+ * @param {Any} va_args - This has a pair and an utput function. The pair is an Array which consits of a variable name and a parser function (ex. ['x', parser]). The output function use the variables.
+ * @return {Function} - Return a monad that is identified in last of arguments.
+ *
+ * @example
+ * // returns [['a', 'c'], 'def']
+ * var p = doParse(['x', item], [null, item], ['y', item],
+ *         function(scope) { return unit([scope.x, scope.y]); });
+ * console.log(p("abcdef"));
  **/
-e.makeParser = function(input) {
-    return e.monad(function() { return [null, input] })
-}
+e.doParse = function() {
+    var args = arguments;
+    return function(input) {
+        return (function() {
+            var ret = {};
+            var rec = function(i, val) {
+                if (i == args.length - 1) {
+                    return [args[i](ret), val];
+                } else {
+                    return args[i][1].bind(function(_) {
+                        var name = args[i][0];
+                        if (name != null) { ret[name] = _[0]; };
+                        return rec(i + 1, _[1]);
+                    }, val);
+                }
+            }
+
+            return rec(0, input);
+        })();
+    };
+};
+
 
 /**
  * A parser sample to return "as is" strings.
@@ -155,7 +178,6 @@ var unit = e.monad(function(val) {
  * @return {Function} - Return a monad value
  **/
 var item = e.monad(function(val) {
-    console.log("val " + val);
     if (val === null) {
         return null;
     } else {
@@ -171,4 +193,5 @@ var item = e.monad(function(val) {
 var failure = e.monad(function(val) {
     return null;
 });
+
 
