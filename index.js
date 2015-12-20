@@ -1,19 +1,23 @@
 /*
-   HTTP utility
-   Copyright (c) 2015, Takanori Nagahara <takanori.nagahara@gmail.com>
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted, provided that the above
+  copyright notice and this permission notice appear in all copies.
 
-   Permission to use, copy, modify, and/or distribute this software for any
-   purpose with or without fee is hereby granted, provided that the above
-   copyright notice and this permission notice appear in all copies.
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
 
-   THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-   WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-   MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-   ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-   ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-   OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-   */
+/**
+ * @fileoverview Utilities for web scraping with http and xmldom
+ *
+ * @author Takanori Nagahara <takanori.nagahara@gmail.com>
+ * @preserve Copyright (c) 2015, Takanori Nagahara.
+ **/
 
 var request = require('request'),
     Iconv = require('iconv').Iconv,
@@ -24,9 +28,11 @@ var e = exports;
 /**
  * Call http get with `url`.
  * @param {String} url This is a url to get.
- * @param {String} encoding This is an encoding for the response body. (Ex. Shift_JIS.)
+ * @param {String} encoding This is an encoding for the response body. (Ex.
+ *     Shift_JIS.)
  * @param {success} This callback handles response when the status code is 200.
- * @param {failure} This callback handles failure case. It is called when the request failed or the response code is not 200.
+ * @param {failure} This callback handles failure case. It is called when the
+ *     request failed or the response code is not 200.
  **/
 e.get = function(url, encoding, success, failure) {
     request({ uri: url, encoding: null },
@@ -82,7 +88,7 @@ e.searchSiblings = function(node, localName, callback) {
 /**
  * @callback siblingsCallback
  * @param {Node} node This is the found node.
- * @return {Boolean} true: continue to search, false: stop searching
+ * @return {Boolean} true: continue to search, false: stop searching.
  **/
 
 /**
@@ -104,24 +110,39 @@ e.getChilds = function(node, localName) {
 
     return arr;
 };
+var parse = e.monad(function() {
+    return [null, "abcdef"] }).bind(function(_) {
+    return item.bind(function(x) {
+        return item.bind(function(_) {
+            return item.bind(function(y) {
+                return [[x[0], y[0]], y[1]];
+            }, _[1]);
+        }, x[1]);
+    }, _[1]);
+});
+console.log(parse);
+
 
 /**
  * Get monad from Function `f`.
  * @param {Function} f - This is a function (ex. parser function)
  * @return {Function} - Return a monad value including f
  *
- * @example
+ * @see doParse
+ * @code {
  * // returns [['a', 'c'], 'def']
- * var parse = e.monad(function() { return [null, "abcdef"] }).bind(function(_) {
- *     return item.bind(function(x) {
- *         return item.bind(function(_) {
- *             return item.bind(function(y) {
- *                 return [[x[0], y[0]], y[1]];
- *             }, _[1]);
- *         }, x[1]);
- *     }, _[1]);
+ * var parse = e.monad(function() {
+ *    return [null, "abcdef"] }).bind(function(_) {
+ *    return item.bind(function(x) {
+ *        return item.bind(function(_) {
+ *            return item.bind(function(y) {
+ *                return [[x[0], y[0]], y[1]];
+ *            }, _[1]);
+ *        }, x[1]);
+ *    }, _[1]);
  * });
  * console.log(parse);
+ * }
  **/
 e.monad = function(f) {
     f.bind = function(g, val) { return g(this(val)); };
@@ -131,14 +152,17 @@ e.monad = function(f) {
 
 /**
  * Execute several parsers sequentially.
- * @param {Any} va_args - This has a pair and an utput function. The pair is an Array which consits of a variable name and a parser function (ex. ['x', parser]). The output function use the variables.
+ * @param {Any} va_args - This has a pair and an utput function. The pair is an
+ *     Array which consits of a variable name and a parser function (ex. ['x',
+ *     parser]). The output function use the variables.
  * @return {Function} - Return a monad that is identified in last of arguments.
  *
- * @example
+ * @code {
  * // returns [['a', 'c'], 'def']
  * var p = doParse(['x', item], [null, item], ['y', item],
  *         function(scope) { return unit([scope.x, scope.y]); });
  * console.log(p("abcdef"));
+ * }
  **/
 e.doParse = function() {
     var args = arguments;
@@ -193,5 +217,4 @@ var item = e.monad(function(val) {
 var failure = e.monad(function(val) {
     return null;
 });
-
 
