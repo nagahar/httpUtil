@@ -112,18 +112,6 @@ e.getChilds = function(node, localName) {
 
     return arr;
 };
-var parse = e.monad(function() {
-    return [null, "abcdef"] }).bind(function(_) {
-    return item.bind(function(x) {
-        return item.bind(function(_) {
-            return item.bind(function(y) {
-                return [[x[0], y[0]], y[1]];
-            }, _[1]);
-        }, x[1]);
-    }, _[1]);
-});
-console.log(parse);
-
 
 /**
  * Get monad from Function `f`.
@@ -154,7 +142,7 @@ e.monad = function(f) {
 
 /**
  * Execute several parsers sequentially.
- * @param {Any} va_args - This has a pair and an utput function. The pair is an
+ * @param {Any} va_args -  Input pairs and an output function. The pair is an
  *     Array which consits of a variable name and a parser function (ex. ['x',
  *     parser]). The output function use the variables.
  * @return {Function} - Return a monad that is identified in last of arguments.
@@ -219,4 +207,24 @@ var item = e.monad(function(val) {
 var failure = e.monad(function(val) {
     return null;
 });
+
+/**
+ * Loop array sequentially.
+ * @param {Array} arr - This is Array to apply `func`.
+ * @param {Function} func - This is a loop body. This function is called with
+ *     two argument.  One is an element of `arr`. The other is "next function"
+ *     which continues next loop.
+ * @param {Function} last - This is called if all of elements of `arr` are
+ *     applied.
+  **/
+e.serial = function(arr, func, last) {
+    var next = function(i) {
+        if (i == arr.length) {
+            last();
+        } else {
+            func(arr[i], function() { next(i + 1); });
+        }
+    };
+    next(0);
+}
 
