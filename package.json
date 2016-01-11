@@ -1,8 +1,8 @@
 {
   "name": "http_util",
   "version": "0.0.4",
-  "description": "http utility",
-  "main": "index.js",
+  "description": "An utility for web scraping",
+  "main": "./lib/http_util.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha"
   },
