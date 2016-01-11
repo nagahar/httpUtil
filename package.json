@@ -1,10 +1,10 @@
 {
   "name": "http_util",
   "version": "0.0.4",
-  "description": "http utility",
-  "main": "index.js",
+  "description": "An utility for web scraping",
+  "main": "./lib/http_util.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -15,9 +15,14 @@
     "request": "^2.65.0",
     "xmldom": "^0.1.19"
   },
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "mocha": "^2.3.4",
+    "sinon": "^1.17.2"
+  },
   "keywords": [
-    "http",
-    "async"
+    "scraping",
+    "http"
   ],
   "author": "Takanori Nagahara",
   "license": "ISC",
