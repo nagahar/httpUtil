@@ -1,4 +1,5 @@
-var _ = require('../index.js');
+"use strict";
+var _ = require('../lib/http_util.js');
 var assert = require('assert');
 describe('convert(', function () {
     it('should return undefined when either the body or encoding is not specified', function () {
