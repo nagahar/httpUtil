@@ -1,4 +1,32 @@
-/*
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: index.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: index.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*
    Permission to use, copy, modify, and/or distribute this software for any
    purpose with or without fee is hereby granted, provided that the above
    copyright notice and this permission notice appear in all copies.
@@ -13,17 +41,18 @@
    */
 
 /**
- * @fileoverview A Utility for web scraping.
- * @author Takanori Nagahara <takanori.nagahara@gmail.com>
+ * @fileoverview Utilities for web scraping with http and xmldom
+ *
+ * @author Takanori Nagahara &lt;takanori.nagahara@gmail.com>
  * @preserve Copyright (c) 2015, Takanori Nagahara.
  **/
 
 "use strict";
+
 var request = require('request'),
-    fs = require('fs'),
     Iconv = require('iconv').Iconv;
 
-/** @module */
+var e = exports;
 
 /**
  * Call http get with `url`.
@@ -31,32 +60,30 @@ var request = require('request'),
  * @param {String} encoding This is an encoding for the response body. (Ex.
  *     Shift_JIS.)
  * @param {success} This callback handles response when the status code is 200.
- *     The parameter is an encoded response body.
  * @param {failure} This callback handles failure case. It is called when the
- *     request failed or the response code is not 200. This has 2 parameters.
- *     One is a status code of response. And the other is a requested url.
+ *     request failed or the response code is not 200.
  **/
-exports.get = function(url, encoding, success, failure) {
-    var reg = /^\.\//;
-    if (url && 0 === url.search(reg)) {
-        fs.readFile(url, function(err, body) {
-            if (err) {
-                failure(undefined, err, url);
-            } else {
-                success(exports.convert(body, encoding));
-            }
-        });
-    } else {
-        request({ uri: url, encoding: null },
-                function(error, response, body) {
-                    if (!error && response.statusCode === 200) {
-                        success(exports.convert(body, encoding));
-                    } else {
-                        failure(response.statusCode, error, url);
-                    }
-                });
-    }
+e.get = function(url, encoding, success, failure) {
+    request({ uri: url, encoding: null },
+            function(error, response, body) {
+                if (!error &amp;&amp; response.statusCode === 200) {
+                    success(e.convert(body, encoding));
+                } else {
+                    failure(response.statusCode, error, url);
+                }
+            });
 };
+
+/**
+ * @callback success
+ * @param {String} response This is an encoded response body.
+ **/
+
+/**
+ * @callback failure
+ * @param {number} code This is a status code of response.
+ * @param {String} url This is a requested url.
+ **/
 
 /**
  * Convert string with `encoding`.
@@ -64,8 +91,8 @@ exports.get = function(url, encoding, success, failure) {
  * @param {String} encoding This is an encoding. (Ex. Shift_JIS.)
  * @return {String} Converted value.
  **/
-exports.convert = function(body, encoding) {
-    if (encoding && body) {
+e.convert = function(body, encoding) {
+    if (encoding !== undefined &amp;&amp; body !== undefined) {
         var iconv = new Iconv(encoding, 'UTF-8//TRANSLIT//IGNORE');
         return iconv.convert(body).toString();
     }
@@ -76,11 +103,9 @@ exports.convert = function(body, encoding) {
  * @param {Node} node This is a node as a basis.
  * @param {String} localName This is a local name to search
  * @param {siblingsCallback} This callback handles a sibling of `node`.
- *     This has a parameters which is the searched node. This returns boolean.
- *     If true, it continue to search. Otherwise, stop searching.
  **/
-exports.searchSiblings = function(node, localName, callback) {
-    while (node) {
+e.searchSiblings = function(node, localName, callback) {
+    while (node !== undefined) {
         if (node.localName === localName) {
             if (callback(node)) {
                 break;
@@ -92,15 +117,21 @@ exports.searchSiblings = function(node, localName, callback) {
 };
 
 /**
+ * @callback siblingsCallback
+ * @param {Node} node This is the found node.
+ * @return {Boolean} true: continue to search, false: stop searching.
+ **/
+
+/**
  * Get nodes identified in `localName` from childNodes of `node`.
  * @param {Node} node This is a node as a basis.
  * @param {String} localName This is a local name to search
- * @return {Array.<Node>} Array of nodes
+ * @return {Array.&lt;Node>} Array of nodes
  **/
-exports.getChilds = function(node, localName) {
+e.getChilds = function(node, localName) {
     var arr = [];
     var n = node.firstChild;
-    while (n) {
+    while (n !== undefined) {
         if (n.localName === localName) {
             arr.push(n);
         }
@@ -120,10 +151,10 @@ exports.getChilds = function(node, localName) {
  * @code {
  * // returns [['a', 'c'], 'def']
  * var parse = e.monad(function() {
- *    return [null, "abcdef"] }).join(function(_) {
- *    return item.join(function(x) {
- *        return item.join(function(_) {
- *            return item.join(function(y) {
+ *    return [null, "abcdef"] }).bind(function(_) {
+ *    return item.bind(function(x) {
+ *        return item.bind(function(_) {
+ *            return item.bind(function(y) {
  *                return [[x[0], y[0]], y[1]];
  *            }, _[1]);
  *        }, x[1]);
@@ -132,44 +163,44 @@ exports.getChilds = function(node, localName) {
  * console.log(parse);
  * }
  **/
-exports.monad = function(f) {
-    f.isMonad = true;
-    f.join = function(g, val) { return g(this(val)); };
+e.monad = function(f) {
+    f.bind = function(g, val) { return g(this(val)); };
     f.get = function() { return this(); };
     return f;
 };
 
-//(function() {
-//    /**
-//     * A parser sample to return "as is" strings.
-//     * @param {Object} val - This is a value
-//     * @return {Function} - Return a monad value
-//     **/
-//    var unit = e.monad(function(val) {
-//        return val;
-//    });
-//
-//    /**
-//     * A parser sample to pick up first characters.
-//     * @param {Object} val - This is a value
-//     * @return {Function} - Return a monad value
-//     **/
-//    var item = e.monad(function(val) {
-//        if (val === null) {
-//            return null;
-//        } else {
-//            return [val.charAt(0), val.slice(1)];
-//        }
-//    });
-//
-//    /**
-//     * A parser sample to return null.
-//     * @return {Function} - Return a monad value
-//     **/
-//    var failure = e.monad(function() {
-//        return null;
-//    });
-//})();
+// sample function
+(function() {
+    /**
+     * A parser sample to return "as is" strings.
+     * @param {Object} val - This is a value
+     * @return {Function} - Return a monad value
+     **/
+    var unit = e.monad(function(val) {
+        return val;
+    });
+
+    /**
+     * A parser sample to pick up first characters.
+     * @param {Object} val - This is a value
+     * @return {Function} - Return a monad value
+     **/
+    var item = e.monad(function(val) {
+        if (val === null) {
+            return null;
+        } else {
+            return [val.charAt(0), val.slice(1)];
+        }
+    });
+
+    /**
+     * A parser sample to return null.
+     * @return {Function} - Return a monad value
+     **/
+    var failure = e.monad(function() {
+        return null;
+    });
+})();
 
 /**
  * Execute several parsers sequentially.
@@ -185,7 +216,7 @@ exports.monad = function(f) {
  * console.log(p("abcdef"));
  * }
  **/
-exports.doParse = function() {
+e.doParse = function() {
     var args = arguments;
     return function(input) {
         return (function() {
@@ -194,16 +225,11 @@ exports.doParse = function() {
                 if (i === args.length - 1) {
                     return [args[i](ret), val];
                 } else {
-                    if (args[i][1].isMonad) {
-                        return args[i][1].join(function(_) {
-                            var name = args[i][0];
-                            if (name) { ret[name] = _[0]; }
-                            return rec(i + 1, _[1]);
-                        }, val);
-                    } else {
-                        // silently ignore unless args[i][1] is monad
-                        return rec(i + 1, val);
-                    }
+                    return args[i][1].bind(function(_) {
+                        var name = args[i][0];
+                        if (name !== null) { ret[name] = _[0]; }
+                        return rec(i + 1, _[1]);
+                    }, val);
                 }
             };
 
@@ -221,7 +247,7 @@ exports.doParse = function() {
  * @param {Function} last - This is called if all of elements of `arr` are
  *     applied.
  **/
-exports.serial = function(arr, func, last) {
+e.serial = function(arr, func, last) {
     var next = function(i) {
         if (i === arr.length) {
             last();
@@ -232,3 +258,27 @@ exports.serial = function(arr, func, last) {
     next(0);
 };
 
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Jan 11 2016 22:40:30 GMT+0900 (JST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
