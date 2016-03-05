@@ -55,8 +55,6 @@ describe('getChilds()', function () {
 
 });
 
-
-
 describe('serial()', function () {
     it('should not throw exception', function () {
         assert.doesNotThrow(function() { _.serial(); });
